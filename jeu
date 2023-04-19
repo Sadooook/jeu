@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Snake Game</title>
+    <style>
+      #game-board {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        grid-template-rows: repeat(10, 1fr);
+        gap: 1px;
+      }
+      .cell {
+        background-color: black;
+      }
+      .snake {
+        background-color: green;
+      }
+      .food {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body onload="startGame()">
+    <div id="game-board"></div>
+    <script>
+      let snake = [{ x: 5, y: 5 }];
+      let direction = "right";
+      let food = null;
+      let score = 0;
+
+      function startGame() {
+        createBoard();
+        createFood();
+        document.addEventListener("keydown", changeDirection);
+        setInterval(moveSnake, 100);
+      }
+
+      function createBoard() {
+        const board = document.getElementById("game-board");
+        for (let y = 0; y < 10; y++) {
+          for (let x = 0; x < 10; x++) {
+            board.innerHTML += `<div class="cell" data-x="${x}" data-y="${y}"></div>`;
+          }
+        }
+      }
+
+      function createFood() {
+        const board = document.getElementById("game-board");
+        const freeCells = board.querySelectorAll(".cell:not(.snake):not(.food)");
+        const randomCell = freeCells[Math.floor(Math.random() * freeCells.length)];
+        food = { x: Number(randomCell.dataset.x), y: Number(randomCell.dataset.y) };
+        randomCell.classList.add("food");
+      }
+
+      function changeDirection(event) {
+        switch (event.keyCode) {
+          case 37: // left arrow
+            direction = "left";
+            break;
+          case 38: // up arrow
+            direction = "up";
+            break;
+          case 39: // right arrow
+            direction = "right";
+            break;
+          case 40: // down arrow
+            direction = "down";
+            break;
+        }
+      }
+
+      function moveSnake() {
+        const board = document.getElementById("game-board");
+        const head = { ...snake[0] };
+        switch (direction) {
+          case "left":
+            head.x--;
+            break;
+          case "up":
+            head.y--;
+            break;
+          case "right":
+            head.x++;
+            break;
+          case "down":
+            head.y++;
+            break;
+        }
+        if (
+          head.x < 0 ||
+          head.x >= 10 ||
+          head.y < 0 ||
+          head.y >= 10 ||
+          snake.some(({ x, y }) => x === head.x && y === head.y)
+        ) {
+          alert(`Game over! Your score is ${score}.`);
+          location.reload();
+          return;
+        }
+        snake.unshift(head);
+        const headCell = board.querySelector(`[data-x="${head.x}"][data-y="${head.y}"]`);
+        headCell.classList.add("snake");
+        if (food && food.x === head.x && food.y === head.y) {
+          score++;
+          food = null;
+          createFood();
+        } else {
+          const tail = snake.pop();
+          const tailCell = board.querySelector(`[data-x="${tail.x}"][data-y="${tail.y}"]`);
+          tailCell.classList.remove("snake");
+        }
+      }
+    </script>
+  </body>
+</html>
